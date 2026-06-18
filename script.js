@@ -312,3 +312,44 @@ function renderizarPalpitesIndividuais(palpites) {
         `;
     });
 }
+// ==========================================
+// INICIALIZAÇÃO INTELIGENTE (VERIFICA EM QUAL PÁGINA ESTAMOS)
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+    
+    // 1. Se estiver na página de palpites, desenha os jogos
+    if (document.getElementById('container-jogos')) {
+        renderizarJogos();
+    }
+
+    // 2. Se estiver nas páginas de dados (Ranking, Resultados ou Auditoria), baixa os dados
+    if (document.getElementById('ranking-body') || 
+        document.getElementById('container-resultados') || 
+        document.getElementById('select-participante')) {
+        carregarDadosServidor();
+    }
+});
+
+let dadosGlobais = null;
+
+function carregarDadosServidor() {
+    // ... [MANTENHA AQUI AS FUNÇÕES carregarDadosServidor, renderizarRanking, etc. do passo anterior]
+}
+
+// ==========================================
+// GATILHOS EXCLUSIVOS DA PÁGINA DE PALPITES
+// ==========================================
+const telefoneInput = document.getElementById('telefone');
+if (telefoneInput) {
+    telefoneInput.addEventListener('input', function (e) {
+        var x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+    });
+}
+
+const formBolao = document.getElementById('bolao-form');
+if (formBolao) {
+    formBolao.addEventListener('submit', function(e) {
+        // ... [MANTENHA AQUI TODO O CÓDIGO DE ENVIO DO FORMULÁRIO E PDF]
+    });
+}

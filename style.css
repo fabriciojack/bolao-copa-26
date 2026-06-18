@@ -259,3 +259,65 @@ button:hover {
     margin-bottom: 15px;
     float: right;
 }
+/* =========================================
+   ESTILOS DA TELA INICIAL (HOME) E BOTÃO VOLTAR
+   ========================================= */
+
+.home-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+@media(min-width: 500px) {
+    .home-grid {
+        grid-template-columns: 1fr 1fr; /* Fica lado a lado no PC/Tablet */
+    }
+}
+
+.home-card {
+    background-color: var(--card-bg);
+    border: 2px solid var(--accent-gold);
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--text-light);
+    font-size: 18px;
+    font-weight: bold;
+    transition: transform 0.2s, background 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.home-card:hover {
+    transform: translateY(-5px);
+    background-color: #1a4f31;
+}
+
+.home-card span {
+    font-size: 40px; /* Tamanho do emoji */
+}
+
+.btn-voltar {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background-color: var(--bg-stadium);
+    border: 1px solid var(--accent-gold);
+    color: var(--accent-gold);
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.btn-voltar:hover {
+    background-color: var(--accent-gold);
+    color: #000;
+}

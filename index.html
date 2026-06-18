@@ -3,85 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bolão Copa do Mundo 2026 - Segunda Fase</title>
+    <title>Home - Bolão Copa 2026</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-
-    <nav class="top-nav">
-        <button class="nav-btn active" data-target="tela-palpites">📝 Fazer Palpites</button>
-        <button class="nav-btn" data-target="tela-ranking">🏆 Ranking Atual</button>
-        <button class="nav-btn" data-target="tela-resultados">⚽ Resultados Oficiais</button>
-        <button class="nav-btn" data-target="tela-auditoria">👁️ Ver Palpites</button>
-    </nav>
 
     <div class="container">
         <header class="header-stadium">
             <h1>COPA DO MUNDO 2026</h1>
-            <h2 id="titulo-secao">Registrar Palpites</h2>
+            <h2>Menu Principal</h2>
         </header>
 
-        <div id="tela-palpites" class="view-section active">
-            <div id="capture-area">
-                <form id="bolao-form">
-                    <section class="user-info">
-                        <div class="input-group">
-                            <label for="nome">Nome Completo:</label>
-                            <input type="text" id="nome" required placeholder="Ex: João da Silva">
-                        </div>
-                        <div class="input-group">
-                            <label for="telefone">Telefone / Celular:</label>
-                            <input type="text" id="telefone" required placeholder="Ex: (99) 99999-9999">
-                        </div>
-                    </section>
-
-                    <section class="matches-list">
-                        <h3>Confrontos</h3>
-                        <div id="container-jogos"></div>
-                    </section>
-                </form>
-            </div>
-            <div class="actions-area">
-                <button type="submit" form="bolao-form" id="btn-submit">Submeter e Exportar Resultados</button>
-            </div>
+        <div class="home-grid">
+            <a href="palpites.html" class="home-card">
+                <span>📝</span>
+                Fazer Palpites
+            </a>
+            <a href="ranking.html" class="home-card">
+                <span>🏆</span>
+                Ranking Atual
+            </a>
+            <a href="resultados.html" class="home-card">
+                <span>⚽</span>
+                Resultados Oficiais
+            </a>
+            <a href="auditoria.html" class="home-card">
+                <span>👁️</span>
+                Ver Palpites
+            </a>
         </div>
-
-        <div id="tela-ranking" class="view-section">
-            <button class="btn-refresh" onclick="carregarDadosServidor()">🔄 Atualizar Dados</button>
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Posição</th>
-                            <th>Participante</th>
-                            <th>Pontos</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ranking-body">
-                        <tr><td colspan="3" style="text-align: center;">Carregando ranking...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="tela-resultados" class="view-section">
-            <p style="text-align: center; color: var(--text-muted); margin-bottom: 15px;">Estes são os resultados oficiais da Linha 2 da sua planilha.</p>
-            <div id="container-resultados" class="matches-list">
-                </div>
-        </div>
-
-        <div id="tela-auditoria" class="view-section">
-            <p style="text-align: center; color: var(--text-muted); margin-bottom: 15px;">Selecione um participante para ver os palpites registrados.</p>
-            <select id="select-participante" class="input-group input" style="width: 100%; margin-bottom: 15px; padding: 10px;">
-                <option value="">Selecione...</option>
-            </select>
-            <div id="container-auditoria" class="matches-list">
-                </div>
-        </div>
-
     </div>
 
-    <script src="script.js"></script>
 </body>
 </html>

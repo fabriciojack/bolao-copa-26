@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fazer Palpites</title>
+    <title>Fazer Palpites - Bolão Copa 2026</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <div id="capture-area" class="container">
+        
         <a href="index.html" class="btn-voltar">⬅ Voltar para a Home</a>
 
         <header class="header-stadium">
@@ -16,7 +17,30 @@
             <h2>Registrar Palpites</h2>
         </header>
 
-        </div>
+        <form id="bolao-form">
+            <section class="user-info">
+                <div class="input-group">
+                    <label for="nome">Nome Completo:</label>
+                    <input type="text" id="nome" required placeholder="Ex: João da Silva">
+                </div>
+                <div class="input-group">
+                    <label for="telefone">Telefone / Celular:</label>
+                    <input type="text" id="telefone" required placeholder="Ex: (99) 99999-9999">
+                </div>
+            </section>
+
+            <section class="matches-list">
+                <h3>Confrontos</h3>
+                <div id="container-jogos"></div>
+            </section>
+
+            <div class="actions-area">
+                <button type="submit" id="btn-submit">Submeter e Exportar Resultados</button>
+            </div>
+        </form>
+
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

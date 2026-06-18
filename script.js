@@ -150,3 +150,165 @@ document.getElementById('bolao-form').addEventListener('submit', function(e) {
         btn.innerText = "Submeter e Exportar Resultados";
     });
 });
+// ==========================================
+// 6. NAVEGAÇÃO ENTRE AS TELAS (SPA)
+// ==========================================
+const navButtons = document.querySelectorAll('.nav-btn');
+const views = document.querySelectorAll('.view-section');
+const tituloSecao = document.getElementById('titulo-secao');
+
+navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        // Remove a classe active de todos
+        navButtons.forEach(b => b.classList.remove('active'));
+        views.forEach(v => v.classList.remove('active'));
+
+        // Ativa apenas o clicado
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-target');
+        document.getElementById(targetId).classList.add('active');
+
+        // Atualiza o título dinamicamente
+        tituloSecao.innerText = btn.innerText;
+
+        // Se for uma das telas de dados, carrega os dados
+        if(targetId !== 'tela-palpites' && dadosGlobais === null) {
+            carregarDadosServidor();
+        }
+    });
+});
+
+// ==========================================
+// 7. CONSULTA AO BACK-END (CARREGAR RANKING E RESULTADOS)
+// ==========================================
+let dadosGlobais = null; // Guarda os dados para não precisar baixar toda vez
+
+function carregarDadosServidor() {
+    const tbodyRanking = document.getElementById('ranking-body');
+    tbodyRanking.innerHTML = `<tr><td colspan="3" style="text-align: center;">⏳ Conectando à planilha... aguarde.</td></tr>`;
+
+    // Faz um GET simples na sua URL do Apps Script
+    fetch(WEB_APP_URL)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                dadosGlobais = data;
+                renderizarRanking(data.ranking);
+                renderizarResultadosOficiais(data.resultadosOficiais);
+                popularSelectParticipantes(data.todosPalpites);
+            } else {
+                tbodyRanking.innerHTML = `<tr><td colspan="3">Erro ao ler os dados.</td></tr>`;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            tbodyRanking.innerHTML = `<tr><td colspan="3">Falha de conexão.</td></tr>`;
+        });
+}
+
+function renderizarRanking(rankingList) {
+    const tbody = document.getElementById('ranking-body');
+    tbody.innerHTML = "";
+
+    if(rankingList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center;">Nenhum palpite registrado ainda.</td></tr>`;
+        return;
+    }
+
+    rankingList.forEach((user, index) => {
+        let icone = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}º`;
+        tbody.innerHTML += `
+            <tr>
+                <td>${icone}</td>
+                <td>${user.nome}</td>
+                <td><strong>${user.pontos} pts</strong></td>
+            </tr>
+        `;
+    });
+}
+
+function renderizarResultadosOficiais(resultados) {
+    const container = document.getElementById('container-resultados');
+    container.innerHTML = "";
+
+    resultados.forEach(res => {
+        // Busca os dados visuais do jogo no nosso array original (bandeiras, times)
+        const j = jogosCopas.find(jogo => jogo.id === res.jogo);
+        if(!j) return;
+
+        let placar1 = res.placar1 !== null ? res.placar1 : "-";
+        let placar2 = res.placar2 !== null ? res.placar2 : "-";
+
+        container.innerHTML += `
+            <div class="match-card">
+                <div class="match-meta">Jogo ${j.id} — ${j.data}</div>
+                <div class="match-teams">
+                    <div class="team team-home">
+                        <img src="https://flagcdn.com/h24/${j.bandeira1}.png" alt="${j.time1}">
+                        <span>${j.time1}</span>
+                    </div>
+                    <div class="score-inputs">
+                        <span class="score-in" style="line-height: 35px; background: #1a4f31;">${placar1}</span>
+                        <span>x</span>
+                        <span class="score-in" style="line-height: 35px; background: #1a4f31;">${placar2}</span>
+                    </div>
+                    <div class="team team-away">
+                        <span>${j.time2}</span>
+                        <img src="https://flagcdn.com/h24/${j.bandeira2}.png" alt="${j.time2}">
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function popularSelectParticipantes(todosPalpites) {
+    const select = document.getElementById('select-participante');
+    select.innerHTML = '<option value="">Selecione um participante...</option>';
+    
+    todosPalpites.forEach(p => {
+        select.innerHTML += `<option value="${p.nome}">${p.nome}</option>`;
+    });
+
+    select.addEventListener('change', function() {
+        const nomeEscolhido = this.value;
+        const participante = dadosGlobais.todosPalpites.find(p => p.nome === nomeEscolhido);
+        
+        if (participante) {
+            renderizarPalpitesIndividuais(participante.palpites);
+        } else {
+            document.getElementById('container-auditoria').innerHTML = "";
+        }
+    });
+}
+
+function renderizarPalpitesIndividuais(palpites) {
+    const container = document.getElementById('container-auditoria');
+    container.innerHTML = "";
+
+    palpites.forEach(p => {
+        const j = jogosCopas.find(jogo => jogo.id === p.jogo);
+        if(!j) return;
+
+        container.innerHTML += `
+            <div class="match-card">
+                <div class="match-meta">Jogo ${j.id} — ${j.data}</div>
+                <div class="match-teams">
+                    <div class="team team-home">
+                        <img src="https://flagcdn.com/h24/${j.bandeira1}.png" alt="${j.time1}">
+                        <span>${j.time1}</span>
+                    </div>
+                    <div class="score-inputs">
+                        <span class="score-in" style="line-height: 35px;">${p.placar1}</span>
+                        <span>x</span>
+                        <span class="score-in" style="line-height: 35px;">${p.placar2}</span>
+                    </div>
+                    <div class="team team-away">
+                        <span>${j.time2}</span>
+                        <img src="https://flagcdn.com/h24/${j.bandeira2}.png" alt="${j.time2}">
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}

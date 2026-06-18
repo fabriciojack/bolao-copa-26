@@ -166,3 +166,96 @@ button {
 button:hover {
     background-color: #d4af37;
 }
+/* =========================================
+   NOVOS ESTILOS PARA O DASHBOARD (SPA)
+   ========================================= */
+
+/* Menu de navegação no topo */
+.top-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 650px;
+}
+
+.nav-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 12px;
+    background-color: var(--card-bg);
+    color: var(--text-light);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.nav-btn:hover {
+    background-color: #1a4f31;
+}
+
+.nav-btn.active {
+    background-color: var(--accent-gold);
+    color: #000;
+    border-color: var(--accent-gold);
+}
+
+/* Lógica de Esconder/Mostrar Telas */
+.view-section {
+    display: none;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.view-section.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tabelas e Botões extras */
+.table-container {
+    overflow-x: auto;
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th, .data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+    background-color: #0b2516;
+    color: var(--accent-gold);
+}
+
+.data-table tr:nth-child(1) td {
+    font-weight: bold;
+    color: var(--accent-gold);
+    font-size: 18px;
+}
+
+.btn-refresh {
+    width: auto;
+    padding: 8px 15px;
+    background-color: var(--border-color);
+    color: white;
+    font-size: 13px;
+    margin-bottom: 15px;
+    float: right;
+}

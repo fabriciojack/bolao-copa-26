@@ -1,7 +1,7 @@
 // ==========================================
 // 1. URL DO GOOGLE APPS SCRIPT
 // ==========================================
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyGiiivplYPkCOZTcmfMta0KNTvKmg14dUE6vgO1F5RwP5rrLTRu6bUWZQDnlavtOad/exec";
+const WEB_APP_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
 
 // ==========================================
 // 2. BASE DE DADOS DOS JOGOS
@@ -34,7 +34,26 @@ const jogosCopas = [
 ];
 
 // ==========================================
-// 3. RENDERIZAÇÃO NA TELA
+// 3. INICIALIZAÇÃO INTELIGENTE POR PÁGINA
+// ==========================================
+let dadosGlobais = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Se a página atual tiver a div de jogos (palpites.html), desenha os jogos
+    if (document.getElementById('container-jogos')) {
+        renderizarJogos();
+    }
+
+    // Se a página for de dados (ranking, resultados ou auditoria), puxa da planilha
+    if (document.getElementById('ranking-body') || 
+        document.getElementById('container-resultados') || 
+        document.getElementById('select-participante')) {
+        carregarDadosServidor();
+    }
+});
+
+// ==========================================
+// 4. FUNÇÕES DE RENDERIZAÇÃO (TELA DE PALPITES)
 // ==========================================
 function renderizarJogos() {
     const container = document.getElementById('container-jogos');
@@ -68,146 +87,121 @@ function renderizarJogos() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", renderizarJogos);
+// ==========================================
+// 5. GATILHOS EXCLUSIVOS DA TELA DE PALPITES (FORMULÁRIO E MÁSCARA)
+// ==========================================
+const telefoneInput = document.getElementById('telefone');
+if (telefoneInput) {
+    telefoneInput.addEventListener('input', function (e) {
+        var x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
+        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
+    });
+}
 
-// ==========================================
-// 4. MÁSCARA DE TELEFONE
-// ==========================================
-document.getElementById('telefone').addEventListener('input', function (e) {
-    var x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
-    e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-});
-
-// ==========================================
-// 5. PROCESSAMENTO E ENVIO (SEPARA O PDF LOCAL DO PACOTE DE DADOS)
-// ==========================================
-document.getElementById('bolao-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const btn = document.getElementById('btn-submit');
-    btn.disabled = true;
-    btn.innerText = "Processando palpites...";
-
-    const nome = document.getElementById('nome').value;
-    const telefone = document.getElementById('telefone').value;
-    
-    let palpites = [];
-    const matchCards = document.querySelectorAll('.match-card');
-    
-    matchCards.forEach(card => {
-        let hScore = card.querySelector('.home-score').value;
-        let aScore = card.querySelector('.away-score').value;
+const formBolao = document.getElementById('bolao-form');
+if (formBolao) {
+    formBolao.addEventListener('submit', function(e) {
+        e.preventDefault();
         
-        hScore = hScore === "" ? 0 : parseInt(hScore);
-        aScore = aScore === "" ? 0 : parseInt(aScore);
+        const btn = document.getElementById('btn-submit');
+        btn.disabled = true;
+        btn.innerText = "Processando palpites...";
+
+        const nome = document.getElementById('nome').value;
+        const telefone = document.getElementById('telefone').value;
         
-        palpites.push({
-            matchId: card.getAttribute('data-match'),
-            placar1: hScore,
-            placar2: aScore
+        let palpites = [];
+        const matchCards = document.querySelectorAll('.match-card');
+        
+        matchCards.forEach(card => {
+            let hScore = card.querySelector('.home-score').value;
+            let aScore = card.querySelector('.away-score').value;
+            
+            hScore = hScore === "" ? 0 : parseInt(hScore);
+            aScore = aScore === "" ? 0 : parseInt(aScore);
+            
+            palpites.push({
+                matchId: card.getAttribute('data-match'),
+                placar1: hScore,
+                placar2: aScore
+            });
+        });
+
+        const element = document.getElementById('capture-area');
+        const nomeLimpo = nome.trim().replace(/\s+/g, '_').toUpperCase();
+        const celularLimpo = telefone.replace(/\D/g, '');
+        const nomeArquivo = `COMPROVANTE_BOLAO_${nomeLimpo}_${celularLimpo}.pdf`;
+
+        const opt = {
+            margin: [10, 5, 10, 5],
+            filename: nomeArquivo,
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+            image: { type: 'jpeg', quality: 0.8 },
+            html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        html2pdf().set(opt).from(element).save();
+
+        const payload = {
+            nome: nome,
+            telefone: telefone,
+            palpites: palpites
+        };
+
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(() => {
+            alert("Sucesso! O comprovante foi salvo no seu dispositivo e os dados foram registrados na planilha.");
+            btn.disabled = false;
+            btn.innerText = "Submeter e Exportar Resultados";
+            formBolao.reset(); // Limpa o formulário após o sucesso
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Falha na comunicação com o servidor. Tente novamente.");
+            btn.disabled = false;
+            btn.innerText = "Submeter e Exportar Resultados";
         });
     });
-
-    // 1. Gera e baixa o PDF visual no celular/PC da pessoa
-    const element = document.getElementById('capture-area');
-    const nomeLimpo = nome.trim().replace(/\s+/g, '_').toUpperCase();
-    const celularLimpo = telefone.replace(/\D/g, '');
-    const nomeArquivo = `COMPROVANTE_BOLAO_${nomeLimpo}_${celularLimpo}.pdf`;
-
-    const opt = {
-        margin: [10, 5, 10, 5],
-        filename: nomeArquivo,
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-        image: { type: 'jpeg', quality: 0.8 },
-        html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
-    
-    html2pdf().set(opt).from(element).save();
-
-    // 2. Monta o pacote de dados LEVE para enviar ao Google (Sem a imagem Base64)
-    const payload = {
-        nome: nome,
-        telefone: telefone,
-        palpites: palpites
-    };
-
-    fetch(WEB_APP_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    })
-    .then(() => {
-        alert("Sucesso! O comprovante foi salvo no seu dispositivo e os dados foram registrados na planilha.");
-        btn.disabled = false;
-        btn.innerText = "Submeter e Exportar Resultados";
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Falha na comunicação com o servidor. Tente novamente.");
-        btn.disabled = false;
-        btn.innerText = "Submeter e Exportar Resultados";
-    });
-});
-// ==========================================
-// 6. NAVEGAÇÃO ENTRE AS TELAS (SPA)
-// ==========================================
-const navButtons = document.querySelectorAll('.nav-btn');
-const views = document.querySelectorAll('.view-section');
-const tituloSecao = document.getElementById('titulo-secao');
-
-navButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        // Remove a classe active de todos
-        navButtons.forEach(b => b.classList.remove('active'));
-        views.forEach(v => v.classList.remove('active'));
-
-        // Ativa apenas o clicado
-        btn.classList.add('active');
-        const targetId = btn.getAttribute('data-target');
-        document.getElementById(targetId).classList.add('active');
-
-        // Atualiza o título dinamicamente
-        tituloSecao.innerText = btn.innerText;
-
-        // Se for uma das telas de dados, carrega os dados
-        if(targetId !== 'tela-palpites' && dadosGlobais === null) {
-            carregarDadosServidor();
-        }
-    });
-});
+}
 
 // ==========================================
-// 7. CONSULTA AO BACK-END (CARREGAR RANKING E RESULTADOS)
+// 6. CARREGAMENTO E RENDERIZAÇÃO DE DADOS (Telas: Ranking, Resultados, Auditoria)
 // ==========================================
-let dadosGlobais = null; // Guarda os dados para não precisar baixar toda vez
-
 function carregarDadosServidor() {
     const tbodyRanking = document.getElementById('ranking-body');
-    tbodyRanking.innerHTML = `<tr><td colspan="3" style="text-align: center;">⏳ Conectando à planilha... aguarde.</td></tr>`;
+    const containerResultados = document.getElementById('container-resultados');
+    const containerAuditoria = document.getElementById('container-auditoria');
 
-    // Faz um GET simples na sua URL do Apps Script
+    if (tbodyRanking) tbodyRanking.innerHTML = `<tr><td colspan="3" style="text-align: center;">⏳ Conectando à planilha...</td></tr>`;
+    if (containerResultados) containerResultados.innerHTML = `<p style="text-align: center;">⏳ Baixando resultados oficiais...</p>`;
+
     fetch(WEB_APP_URL)
         .then(response => response.json())
         .then(data => {
             if (data.status === "success") {
                 dadosGlobais = data;
-                renderizarRanking(data.ranking);
-                renderizarResultadosOficiais(data.resultadosOficiais);
-                popularSelectParticipantes(data.todosPalpites);
+                if (tbodyRanking) renderizarRanking(data.ranking);
+                if (containerResultados) renderizarResultadosOficiais(data.resultadosOficiais);
+                if (document.getElementById('select-participante')) popularSelectParticipantes(data.todosPalpites);
             } else {
-                tbodyRanking.innerHTML = `<tr><td colspan="3">Erro ao ler os dados.</td></tr>`;
+                if (tbodyRanking) tbodyRanking.innerHTML = `<tr><td colspan="3">Erro ao ler os dados.</td></tr>`;
             }
         })
         .catch(err => {
             console.error(err);
-            tbodyRanking.innerHTML = `<tr><td colspan="3">Falha de conexão.</td></tr>`;
+            if (tbodyRanking) tbodyRanking.innerHTML = `<tr><td colspan="3">Falha de conexão.</td></tr>`;
         });
 }
 
 function renderizarRanking(rankingList) {
     const tbody = document.getElementById('ranking-body');
+    if(!tbody) return;
     tbody.innerHTML = "";
 
     if(rankingList.length === 0) {
@@ -229,10 +223,10 @@ function renderizarRanking(rankingList) {
 
 function renderizarResultadosOficiais(resultados) {
     const container = document.getElementById('container-resultados');
+    if(!container) return;
     container.innerHTML = "";
 
     resultados.forEach(res => {
-        // Busca os dados visuais do jogo no nosso array original (bandeiras, times)
         const j = jogosCopas.find(jogo => jogo.id === res.jogo);
         if(!j) return;
 
@@ -264,6 +258,8 @@ function renderizarResultadosOficiais(resultados) {
 
 function popularSelectParticipantes(todosPalpites) {
     const select = document.getElementById('select-participante');
+    if(!select) return;
+    
     select.innerHTML = '<option value="">Selecione um participante...</option>';
     
     todosPalpites.forEach(p => {
@@ -284,6 +280,7 @@ function popularSelectParticipantes(todosPalpites) {
 
 function renderizarPalpitesIndividuais(palpites) {
     const container = document.getElementById('container-auditoria');
+    if(!container) return;
     container.innerHTML = "";
 
     palpites.forEach(p => {
@@ -310,46 +307,5 @@ function renderizarPalpitesIndividuais(palpites) {
                 </div>
             </div>
         `;
-    });
-}
-// ==========================================
-// INICIALIZAÇÃO INTELIGENTE (VERIFICA EM QUAL PÁGINA ESTAMOS)
-// ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-    
-    // 1. Se estiver na página de palpites, desenha os jogos
-    if (document.getElementById('container-jogos')) {
-        renderizarJogos();
-    }
-
-    // 2. Se estiver nas páginas de dados (Ranking, Resultados ou Auditoria), baixa os dados
-    if (document.getElementById('ranking-body') || 
-        document.getElementById('container-resultados') || 
-        document.getElementById('select-participante')) {
-        carregarDadosServidor();
-    }
-});
-
-let dadosGlobais = null;
-
-function carregarDadosServidor() {
-    // ... [MANTENHA AQUI AS FUNÇÕES carregarDadosServidor, renderizarRanking, etc. do passo anterior]
-}
-
-// ==========================================
-// GATILHOS EXCLUSIVOS DA PÁGINA DE PALPITES
-// ==========================================
-const telefoneInput = document.getElementById('telefone');
-if (telefoneInput) {
-    telefoneInput.addEventListener('input', function (e) {
-        var x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,5})(\d{0,4})/);
-        e.target.value = !x[2] ? x[1] : '(' + x[1] + ') ' + x[2] + (x[3] ? '-' + x[3] : '');
-    });
-}
-
-const formBolao = document.getElementById('bolao-form');
-if (formBolao) {
-    formBolao.addEventListener('submit', function(e) {
-        // ... [MANTENHA AQUI TODO O CÓDIGO DE ENVIO DO FORMULÁRIO E PDF]
     });
 }

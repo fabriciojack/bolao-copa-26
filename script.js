@@ -1,7 +1,7 @@
 // ==========================================
 // 1. URL DO GOOGLE APPS SCRIPT
 // ==========================================
-const WEB_APP_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyGiiivplYPkCOZTcmfMta0KNTvKmg14dUE6vgO1F5RwP5rrLTRu6bUWZQDnlavtOad/exec";
 
 // ==========================================
 // 2. BASE DE DADOS DOS JOGOS

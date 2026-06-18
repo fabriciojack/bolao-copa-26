@@ -3,20 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoria</title>
+    <title>Ver Palpites</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-    <div id="capture-area" class="container">
+    <div class="container">
         <a href="index.html" class="btn-voltar">⬅ Voltar para a Home</a>
-
         <header class="header-stadium">
             <h1>COPA DO MUNDO 2026</h1>
-            <h2>Auditoria</h2>
+            <h2>Auditoria de Palpites</h2>
         </header>
 
-        </div>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 15px;">Selecione um colega para ver as apostas.</p>
+        
+        <select id="select-participante" style="width: 100%; margin-bottom: 15px; padding: 10px; border-radius: 6px; font-size: 16px;">
+            <option value="">Carregando participantes...</option>
+        </select>
+
+        <div id="container-auditoria" class="matches-list"></div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
